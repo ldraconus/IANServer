@@ -1,33 +1,70 @@
 
 // small helper function for selecting element by id
-let id = id => document.getElementById(id);
+//let id = id => document.getElementById(id);
 
-//Establish the WebSocket connection and set up event handlers
-let ws = new WebSocket('ws://' + window.location.host + '/ws');
-ws.onmessage = msg => updateChat(msg);
-ws.onclose = () => alert("WebSocket connection closed");
-
-// Add event listeners to button and input field
-id("send").addEventListener("click", () => sendAndClear(id("message").value));
-id("message").addEventListener("keypress", function (e) {
-    if (e.keyCode === 13) { // Send message if enter is pressed in input field
-        sendAndClear(e.target.value);
-    }
-});
-
+//Global Variables
+let ws = null;
 var message = { name: "", type: "TEACHER", msg: "" };
+var log = true;
+var stud = false;
+var teach = false;
 
-function sendAndClear(msg) {
-    if (msg !== "") {
-	message["msg"] = msg;
-	message["name"] = id("name").value;
-	var json = JSON.stringify(message);
-        ws.send(json);
-        id("message").value = "";
-    }
+function login()
+{
+  //Establish the WebSocket connection and set up event handlers
+  ws = new WebSocket('ws://' + window.location.host + '/ws');
+  ws.onmessage = msg => updateChat(msg);
+  ws.onclose = () => alert("WebSocket connection closed");
+  var name = document.getElementById("name").value;
+  var pass = document.getElementById("password").value;
+  message.name = name;
+  message.msg = pass;
+  message.type = "LOGIN";
+  var json = JSON.stringify(message);
+  ws.send(json);
 }
 
-function updateChat(msg) { // Update chat-panel and list of connected users
+
+
+function updateChat(msg) {
+  if( log )
+  {
+    updateLog(msg);
+  }
+  else if( stud )
+  {
+    updateStudent(msg);
+  }
+  else if( teach )
+  {
+    updateTeacher(msg);
+  }
+}
+
+function updateStudent(msg)
+{
+  //to add later if we want sending msg
+}
+
+function updateLog(msg)
+{
+   let data = JSON.parse(msg.data);
+   if(data.Type == "TEACHER")
+   {
+     log = false;
+     teach = true;
+     showTeacher();
+   }
+   else if(data.Type == "STUDENT")
+   {
+     log = false;
+     teach = true;
+     showStudent();
+   }
+}
+
+// Update chat-panel and list of connected users
+function updateTeacher(msg) {
 	var sp = "&nbsp&nbsp&nbsp&nbsp";
     let data = JSON.parse(msg.data);
     id("chat").insertAdjacentHTML("afterbegin", data.msg);
@@ -57,6 +94,11 @@ function getInfo()
             //alert(name + " " + msg + " " + radioValue);
             //Here are the 3 values, they just need to be
             //added to the JSON object
+            message.name = name;
+            message.msg = msg;
+            message.type = radioValue + "";
+            var json = JSON.stringify(message);
+            ws.send(json);
        });
    });
 
