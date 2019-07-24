@@ -22,24 +22,33 @@
 
 <body onload = "showLogin()">
   <div id = "login">
-    <div id="frame">
-      <div id="surface">
-        <!--Original Chat Controls-->
-        <div id="chatControls">
-        Secret Name:
-        <input class = "typeText" placeholder="Type your name" ></input>
-        Password:
-        <input class = "typeText" placeholder="Type your password" ></input>
-        <br><br>
-        <button id="send">Send</button>
-         <br>
-        </div> <!--Close Up chalk board Surface-->
-       <br>
-       <div id="tray">
-       <div id="eraser"></div>
-       <div id="chalk"></div>
-     </div>
-     </div>
+   <div class="auth">
+        <div class="container">
+            <div class="auth__inner">
+                <div class="auth__media">
+                    <img src='IAN-logo-3.png'>
+                </div>
+                <div class="auth__auth">
+                    <h1 class="auth__title">Access your account</h1>
+                    <p>Fill in your name and password to proceed</p>
+
+                    <form>
+                        <div>
+                          <label>Name</label>
+                          <input  type="text">
+                        </div>
+
+                        <div>
+                          <label>Password</label>
+                          <input type="text">
+                        </div>
+
+                        <button type="submit" class="button button__accent">Login</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
     </div>
   </div>
 
