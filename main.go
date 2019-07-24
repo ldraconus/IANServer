@@ -16,6 +16,8 @@ type Status struct {
 var clients = make(map[*websocket.Conn]int) // connected clients
 var broadcast = make(chan Message)          // broadcast channel
 
+var teacher *websocket.Conn = nil;
+
 // configure the upgrader
 var upgrader = websocket.Upgrader{}
 
@@ -24,9 +26,6 @@ type Message struct {
     Type     string `json:"type"`
     Name     string `json:"name"`
     Message  string `json:"msg"`
-}
-type Echo struct {
-    Message string `json:"msg"`
 }
 
 func main() {
@@ -84,16 +83,17 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	} else {
 	   if msg.Type == "LOGIN" {
 	      if ValidLogin(msg.Name, msg.Message) {
-	      	 teacher := 0
+	      	 teach := 0
 		 if IsTeacher(msg.Name) {
-		    teacher = 4;
+		    teach = 4;
+		    teacher = ws;
 		 }
-	         clients[ws] = 3 + teacher
-	         var toSend Echo
+	         clients[ws] = 3 + teach
+	         var toSend Message
 		 if clients[ws] > 4 {
-	            toSend.Message = "TEACHER"
+	            toSend.Type = "TEACHER"
 		 } else {
-	            toSend.Message = "STUDENT"
+	            toSend.Type = "STUDENT"
 		 }
 	         err := ws.WriteJSON(toSend)
 	         if err != nil {
@@ -102,8 +102,8 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		    return
 	         }
 	      } else {
-	         var toSend Echo
-	         toSend.Message = "Invalid login"
+	         var toSend Message
+	         toSend.Type = "INVALID"
 	         err := ws.WriteJSON(toSend)
 	         if err != nil {
 	            log.Printf("error: %v", err)
@@ -112,8 +112,8 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	         }
 	      }
 	   } else {
-	      var toSend Echo
-	      toSend.Message = "Login first"
+	      var toSend Message
+	      toSend.Message = "LOGIN"
 	      err := ws.WriteJSON(toSend)
 	      if err != nil {
 	         log.Printf("error: %v", err)
@@ -130,24 +130,14 @@ func handleMessages() {
         // Grab the next message from the broadcast channel
 	msg := <-broadcast
 
-	var who string
-        if msg.Type == "TEACHER" {
-            who = msg.Type + " (" + msg.Name + ") "
-        } else {
-            who = msg.Name + " "
-        }
-	who = "<b>" + who + "</b>"
-	var toSend Echo
-        toSend.Message = "<p>" + who + msg.Message + "</p>"
-
-	// Send it out to every client that is currently connected
-	for client := range clients {
-	    err := client.WriteJSON(toSend)
-	    if err != nil {
-	        log.Printf("error: %v", err)
-		client.Close()
-		delete(clients, client)
-	    }
+	if teacher == nil {
+	    return;
+	}
+	err := teacher.WriteJSON(msg)
+	if err != nil {
+	    log.Printf("error: %v", err)
+	    teacher.Close()
+	    delete(clients, teacher)
 	}
     }
 }
