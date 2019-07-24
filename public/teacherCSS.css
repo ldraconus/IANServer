@@ -7,14 +7,6 @@ h1{
   font-family: monospace;
 }
 
-.control{
-    border: 1px solid black;
-    flex: 1;
-    outline: none;
-    padding: 0.5rem;
-    border-radius: 0.2rem 0 0 0.2rem;
-}
-
 #todo {
     margin: 0 auto;
     width: 500px;
