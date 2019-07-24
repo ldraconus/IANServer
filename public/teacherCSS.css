@@ -14,20 +14,6 @@ h1{
     padding: 0.5rem;
     border-radius: 0.2rem 0 0 0.2rem;
 }
-.btn{
-  border: 1px solid white;
-  color: white;
-  background-color:  #555;
-  padding: 0.5rem 2rem;
-  border-radius: 0 0.2rem 0.2rem 0;
-}
-  form {
-    display: inline-block;
-}
-.form-group {
-    text-align: center;
-    padding-bottom: 25px;
-}
 
 #todo {
     margin: 0 auto;
