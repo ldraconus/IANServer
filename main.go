@@ -7,26 +7,25 @@ import (
    "github.com/gorilla/websocket"
 )
 
-type Status struct {
-    LoggedIn bool
-    Teacher bool
-    Connected bool
-}
-
-var clients = make(map[*websocket.Conn]int) // connected clients
-var broadcast = make(chan Message)          // broadcast channel
-
-var teacher *websocket.Conn = nil;
-
-// configure the upgrader
-var upgrader = websocket.Upgrader{}
-
 // Define our message object
 type Message struct {
     Type     string `json:"type"`
     Name     string `json:"name"`
     Message  string `json:"msg"`
 }
+type Packet struct {
+    msg Message
+    conn *websocket.Conn
+}
+
+var clients = make(map[*websocket.Conn] bool) // connected clients
+var broadcast = make(chan Packet)          // broadcast channel
+
+var teacher *websocket.Conn = nil;
+
+// configure the upgrader
+var upgrader = websocket.Upgrader{}
+
 
 func main() {
     // Initialize the DB
@@ -60,84 +59,79 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
     defer ws.Close()
 
     // Register our new client
-    clients[ws] = 1
+    clients[ws] = true
 
     for {
-    	var msg Message
-	// Read in a new message as JSON and map it to a Message object
-	err := ws.ReadJSON(&msg)
-	if err != nil {
-	    log.Printf("error: %v", err)
-	    delete(clients, ws)
-	    break
-	}
+       var msg Message
+       var pkt Packet
 
-	if clients[ws] > 2 {
-	   if clients[ws] > 4 {
-	      msg.Type = "TEACHER"
-	   } else {
-	      msg.Type = "STUDENT"
-	   }
-	   // Send the new received message to the broadcast channel
-	   broadcast <- msg
-	} else {
-	   if msg.Type == "LOGIN" {
-	      if ValidLogin(msg.Name, msg.Message) {
-	      	 teach := 0
-		 if IsTeacher(msg.Name) {
-		    teach = 4;
-		    teacher = ws;
-		 }
-	         clients[ws] = 3 + teach
-	         var toSend Message
-		 if clients[ws] > 4 {
-	            toSend.Type = "TEACHER"
-		 } else {
-	            toSend.Type = "STUDENT"
-		 }
-	         err := ws.WriteJSON(toSend)
-	         if err != nil {
-	            log.Printf("error: %v", err)
-		    delete(clients, ws)
-		    return
-	         }
-	      } else {
-	         var toSend Message
-	         toSend.Type = "INVALID"
-	         err := ws.WriteJSON(toSend)
-	         if err != nil {
-	            log.Printf("error: %v", err)
-		    delete(clients, ws)
-		    return
-	         }
-	      }
-	   } else {
-	      var toSend Message
-	      toSend.Message = "LOGIN"
-	      err := ws.WriteJSON(toSend)
-	      if err != nil {
-	         log.Printf("error: %v", err)
-		 delete(clients, ws)
-		 return
-	     }
-	  }
-       }  
+       // Read in a new message as JSON and map it to a Message object
+       err := ws.ReadJSON(&msg)
+log.Printf("msg: {\n");
+log.Printf("   \"name\": \"" + msg.Name + "\",\n");
+log.Printf("   \"type\": \"" + msg.Type + "\",\n");
+log.Printf("   \"msg\": \"" + msg.Message + "\"\n");
+log.Printf("}\n");
+       pkt.msg = msg;
+       pkt.conn = ws;
+       if err != nil {
+          log.Printf("error: %v", err)
+          delete(clients, ws)
+          break
+       }
+       // Send the newly received message to the broadcast channel
+       broadcast <- pkt
     }
 }
 
 func handleMessages() {
     for {
-        // Grab the next message from the broadcast channel
-	msg := <-broadcast
+    	var msg Message
+    	var pkt Packet
 
-	if teacher == nil {
-	    return;
-	}
-	err := teacher.WriteJSON(msg)
-	if err != nil {
-	    log.Printf("error: %v", err)
-	    teacher.Close()
-	    delete(clients, teacher)
-	}
+        // Grab the next message from the broadcast channel
+	pkt = <-broadcast
+        msg = pkt.msg
+
+	if msg.Type == "LOGIN" {
+	   if ValidLogin(msg.Name, msg.Message) {
+	      teach := 0
+	      if IsTeacher(msg.Name) {
+	         teach = 1;
+		 teacher = pkt.conn;
+    	      }
+	      var toSend Message
+	      if teach == 1 {
+	         toSend.Type = "TEACHER"
+	      } else {
+	         toSend.Type = "STUDENT"
+	      }
+	      err := pkt.conn.WriteJSON(toSend)
+	      if err != nil {
+	         log.Printf("error: %v", err)
+	         delete(clients, pkt.conn)
+	         return
+	      }
+	   } else {
+	      var toSend Message
+	      toSend.Type = "INVALID"
+	      err := pkt.conn.WriteJSON(toSend)
+	      if err != nil {
+	         log.Printf("error: %v", err)
+	         delete(clients, pkt.conn)
+	         return
+	      }
+	   }
+       } else {
+	  if teacher == nil {
+	     return;
+	  }
+	  err := teacher.WriteJSON(msg)
+	  if err != nil {
+	     log.Printf("error: %v", err)
+	     teacher.Close()
+	     delete(clients, teacher)
+	  }
+       }
     }
 }

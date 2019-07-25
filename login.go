@@ -57,14 +57,14 @@ func InitDB() {
 func ValidLogin(id, password string) bool {
      database, _ := sql.Open("sqlite3", "./auth.db")
      defer database.Close();
-     rows, _ := database.Query("SELECT id FROM IANAuth WHERE nickname = ? AND password = ?")
+     rows, _ := database.Query("SELECT id FROM IANAuth WHERE nickname = ? AND password = ?", id, password)
      return rows.Next()
 }
 
 func IsTeacher(id string) bool {
      database, _ := sql.Open("sqlite3", "./auth.db")
      defer database.Close();
-     rows, _ := database.Query("SELECT type FROM IANAuth WHERE nickname = ?")
+     rows, _ := database.Query("SELECT type FROM IANAuth WHERE nickname = ?", id)
      typ := ""
      rows.Scan(&typ)
      return typ == "TEACHER"
