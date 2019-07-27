@@ -6,23 +6,20 @@
   <!--TODO: build a favicon that cutsy-->
 
   <!-- CSS for the PAGE -->
-  <link rel="stylesheet" href="styleIAN.css">
+  <link rel="stylesheet" href="styleIAN.css" />
   <link rel="stylesheet" type = "text/css" href="login.css" />
-
   <!-- Font Awesome Gives US the STARS from the Icon Library -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
 
   <!--JQuery Animation Import-->
   <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.1.min.js"></script>
-
-
   <script src="codeIAN.js"></script>
 
 </head>
 
-<body onload = "showLogin()">
+<body onload="showLogin()">
   <div id = "login">
-   <div class="auth">
+    <div class="auth">
         <div class="container">
             <div class="auth__inner">
                 <div class="auth__media">
@@ -32,7 +29,6 @@
                     <h1 class="auth__title">Access your account</h1>
                     <p>Fill in your name and password to proceed</p>
 
-                    <form>
                         <div>
                           <label>Name</label>
                           <input  type="text" id = "name">
@@ -43,8 +39,7 @@
                           <input type="text" id = "password"> 
                         </div>
 
-                        <button type="submit" class="button button__accent" onclick = "login()">Login</button>
-                    </form>
+                        <button class="button button__accent" onclick = "login()">Login</button>
 
                 </div>
             </div>
@@ -52,7 +47,7 @@
     </div>
   </div>
 
-   <div id = "student">
+  <div id = "student" display="none">
      <div id="frame">
        <div id="surface">
          <!--Original Chat Controls-->
@@ -71,7 +66,6 @@
          <!--This is the star rating graphic really just modified radio buttons-->
          <!--Chris, how would the backend recieve this information?-->
          <!--I put it in a form tag and gave each one a value if that like,..helps-->
-         <form class="rate">
            <input id="rate1-star5" type="radio" name="rate1" value="5" />
            <label for="rate1-star5" title="I could figure it out but some help would be nice">5</label>
 
@@ -86,7 +80,6 @@
 
            <input id="rate1-star1" type="radio" name="rate1" value="1" />
            <label for="rate1-star1" title="Very bad, I AM STUCK!">1</label>
-         </form>
        </div>
        <!--TODO: Make this button look cutsy in CSS-->
        <br>
@@ -101,9 +94,10 @@
      </div>
    </div>
 
-    <div id = "teacher">
+    <div id = "teacher" display="none">
      <h1>TODO</h1>
      <br>
      <ul class="list-unstyled" id="todo"></ul>
     </div>
 </body>
+</html>

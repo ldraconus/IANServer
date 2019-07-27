@@ -1,27 +1,49 @@
-
-// small helper function for selecting element by id
-//let id = id => document.getElementById(id);
-
 //Global Variables
 let ws = null;
-var message = { name: "", type: "TEACHER", msg: "" };
+var message = { name: "", type: "LOGIN", msg: "" };
 var log = true;
 var stud = false;
 var teach = false;
 
-function login()
+function updateStudent(msg)
 {
-  //Establish the WebSocket connection and set up event handlers
-  var name = document.getElementById("name").value;
-  var pass = document.getElementById("password").value;
-  message.name = name;
-  message.msg = pass;
-  message.type = "LOGIN";
-  var json = JSON.stringify(message);
-  ws.send(json);
+  //to add later if we want sending msg
 }
 
+function updateLog(msg)
+{
+   let data = JSON.parse(msg.data);
+alert(data.type);
+   if(data.type == "TEACHER")
+   {
+     log = false;
+     teach = true;
+     showTeacher();
+   }
+   else if(data.type == "STUDENT")
+   {
+     log = false;
+     student = true;
+     showStudent();
+   }
+}
 
+// Update chat-panel and list of connected users
+function updateTeacher(msg) {
+    var sp = "&nbsp&nbsp&nbsp&nbsp";
+    let data = JSON.parse(msg.data);
+    id("chat").insertAdjacentHTML("afterbegin", data.msg);
+
+    $(document).ready(function () {
+        $('button').click(function () {
+     	   $('#todo').append("<li>" + data.name + sp + data.msg + sp + data.type + "<a href='#' id='close'>delete</a></li>");
+        });
+
+        $("body").on('click', 'li', function () {
+            $(this).closest("li").remove();
+   	});
+    });
+}
 
 function updateChat(msg) {
   if( log )
@@ -38,44 +60,20 @@ function updateChat(msg) {
   }
 }
 
-function updateStudent(msg)
+//Establish the WebSocket connection and set up event handlers
+ws = new WebSocket('ws://' + window.location.host + '/ws');
+ws.onmessage = msg => updateChat(msg);
+ws.onclose = () => alert("WebSocket connection closed");
+
+function login()
 {
-  //to add later if we want sending msg
-}
-
-function updateLog(msg)
-{
-   let data = JSON.parse(msg.data);
-   if(data.Type == "TEACHER")
-   {
-     log = false;
-     teach = true;
-     showTeacher();
-   }
-   else if(data.Type == "STUDENT")
-   {
-     log = false;
-     student = true;
-     showStudent();
-   }
-}
-
-// Update chat-panel and list of connected users
-function updateTeacher(msg) {
-	var sp = "&nbsp&nbsp&nbsp&nbsp";
-    let data = JSON.parse(msg.data);
-    id("chat").insertAdjacentHTML("afterbegin", data.msg);
-   //    id("userlist").innerHTML = data.userlist.map(user => "<li>" + user + "</li>").join("");
-
-  	$(document).ready(function () {
-   	 $('button').click(function () {
-     	   $('#todo').append("<li>" + data.name + sp + data.msg + sp + data.type + "<a href='#' id='close'>delete</a></li>");
-   	  });
-
-  	  $("body").on('click', 'li', function () {
-      	  $(this).closest("li").remove();
-   	  });
-     });
+  var name = document.getElementById("name").value;
+  var pass = document.getElementById("password").value;
+  message.name = name;
+  message.msg = pass;
+  message.type = "LOGIN";
+  var json = JSON.stringify(message);
+  ws.send(json);
 }
 
 //Creates JSON Object after submit on Student side
@@ -101,26 +99,27 @@ function getInfo()
 
 }
 
+var once = false;
+
 function showLogin()
 {
-  document.getElementById("login").hidden = false;
-  document.getElementById("student").hidden = true;
-  document.getElementById("teacher").hidden = true;
-  ws = new WebSocket('ws://' + window.location.host + '/ws');
-  ws.onmessage = msg => updateChat(msg);
-  ws.onclose = () => alert("WebSocket connection closed");
+  if (once) return;
+  once = true;
+  document.getElementById("login").style.display = "block";
+  document.getElementById("student").style.display = "none";
+  document.getElementById("teacher").style.display = "none";
 }
 
 function showStudent()
 {
-  document.getElementById("login").hidden = true;
-  document.getElementById("student").hidden = false;
-  document.getElementById("teacher").hidden = true;
+  document.getElementById("login").style.display = "none";
+  document.getElementById("student").style.display = "block";
+  document.getElementById("teacher").style.display = "none";
 }
 
 function showTeacher()
 {
-  document.getElementById("login").hidden = true;
-  document.getElementById("student").hidden = true;
-  document.getElementById("teacher").hidden = false;
+  document.getElementById("login").style.display = "none";
+  document.getElementById("student").style.display = "none";
+  document.getElementById("teacher").style.display = "block";
 }

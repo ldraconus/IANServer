@@ -5,6 +5,7 @@ import (
        "encoding/json"
        "io/ioutil"
        "fmt"
+       "log"
 
        _ "github.com/mattn/go-sqlite3"
 )
@@ -58,14 +59,19 @@ func ValidLogin(id, password string) bool {
      database, _ := sql.Open("sqlite3", "./auth.db")
      defer database.Close();
      rows, _ := database.Query("SELECT id FROM IANAuth WHERE nickname = ? AND password = ?", id, password)
+     defer rows.Close()
      return rows.Next()
 }
 
 func IsTeacher(id string) bool {
+log.Printf("In IsTeacher(\"" + id + "\")\n");
      database, _ := sql.Open("sqlite3", "./auth.db")
      defer database.Close();
      rows, _ := database.Query("SELECT type FROM IANAuth WHERE nickname = ?", id)
      typ := ""
+     defer rows.Close()
+     rows.Next()
      rows.Scan(&typ)
+log.Printf("typ = \"" + typ + "\"\n");
      return typ == "TEACHER"
 }
