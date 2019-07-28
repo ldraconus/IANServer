@@ -26,6 +26,12 @@ alert(data.type);
      student = true;
      showStudent();
    }
+  else 
+   {
+     log = false;
+     teach = true;
+     showStudent();
+   }
 }
 
 // Update chat-panel and list of connected users
