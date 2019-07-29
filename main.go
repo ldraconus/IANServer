@@ -20,7 +20,6 @@ type Packet struct {
 
 var broadcast = make(chan Packet)          // message channel
 var clients = make(map[*websocket.Conn]int)
-var results [100]chan Message
 var teacher = -1
 
 // configure the upgrader
@@ -48,23 +47,20 @@ func main() {
     }
 }
 
-func findEmpty() int {
-    for i := 0; i < 100; i++ {
-	if results[i] == nil {
-	    return i
-	}
+func findIndex() int {
+    max := -1
+    for _, id := range clients {
+        if id > max {
+            max = id
+        }
     }
-    return -1
+    return max + 1
 }
 
-func eraseChannel(ws *websocket.Conn) {
-    results[clients[ws]] = nil
-}
-
-func SendMessage(msg Message) {
+func SendMessage(msg Message, who int) {
     for client, id := range clients {
-        if id == teacher {
-log.Printf("Sending message to teacher...\n");
+        if id == who {
+log.Printf("Sending message ...\n")
             err := client.WriteJSON(msg)
             if err != nil {
                 log.Printf("write error: %v", err)
@@ -82,15 +78,13 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
     }
 
     // Make sure we close the connection when the function returns
-    defer eraseChannel(ws)
     defer ws.Close()
 
     var msg Message
     var pack Packet
 
-    pack.Id = findEmpty()
+    pack.Id = findIndex()
     clients[ws] = pack.Id
-    results[clients[ws]] = make(chan Message)
 
     for {
         // Read in a new message as JSON and map it to a Message object
@@ -103,33 +97,29 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
         pack.Msg = msg
 
         // Send the newly received message to the broadcast channel
-        broadcast <- pack
-        msg = <-results[clients[ws]]
 log.Printf("msg: {\n")
 log.Printf("   \"name\": \"" + msg.Name + "\",\n")
 log.Printf("   \"type\": \"" + msg.Type + "\",\n")
 log.Printf("   \"msg\": \"" + msg.Message + "\"\n")
-log.Printf("}\n");
-        if msg.Type == "TEACHER" {
-            teacher = pack.Id
-            err = ws.WriteJSON(msg)
-        } else if msg.Type == "STUDENT" {
-            err = ws.WriteJSON(msg)
-        } else if msg.Type == "INVALID" {
-            err = ws.WriteJSON(msg)
+log.Printf("}\n")
+        broadcast <- pack
+    }
+}
+
+func writeMessage(msg Message, id int) {
+    if msg.Type == "TEACHER" {
+        teacher = id
+        SendMessage(msg, id)
+    } else if msg.Type == "STUDENT" {
+        SendMessage(msg, id)
+    } else if msg.Type == "INVALID" {
+        SendMessage(msg, id)
+    } else {
+        if teacher != -1 {
+            SendMessage(msg, teacher)
+log.Printf("Message sent to Teacher\n")
         } else {
-            if teacher != -1 {
-                SendMessage(msg)
-            } else {
-log.Printf("Teacher not logged in, message dropped\n");
-            }
-            continue
-        }
-        if err != nil {
-            log.Printf("response error: %v\n", err)
-            break;
-        } else {
-            log.Printf("login response sent\n");
+log.Printf("Teacher not logged in, message dropped\n")
         }
     }
 }
@@ -143,20 +133,20 @@ func handleMessages() {
 	pack = <-broadcast
 	msg = pack.Msg
 	id := pack.Id
-log.Printf("msg: {\n");
-log.Printf("   \"name\": \"" + msg.Name + "\",\n");
-log.Printf("   \"type\": \"" + msg.Type + "\",\n");
-log.Printf("   \"msg\": \"" + msg.Message + "\"\n");
-log.Printf("}\n");
-log.Printf("id: %d\n", id);
+log.Printf("msg: {\n")
+log.Printf("   \"name\": \"" + msg.Name + "\",\n")
+log.Printf("   \"type\": \"" + msg.Type + "\",\n")
+log.Printf("   \"msg\": \"" + msg.Message + "\"\n")
+log.Printf("}\n")
+log.Printf("id: %d\n", id)
 
 	if msg.Type == "LOGIN" {
 	    var toSend Message
 	    if ValidLogin(msg.Name, msg.Message) {
-log.Printf("Login is valid.\n");
+log.Printf("Login is valid.\n")
 	        teach := 0
 	        if IsTeacher(msg.Name) {
-log.Printf("Teacher has logged on\n");
+log.Printf("Teacher has logged on\n")
 	            teach = 1
     	        }
 	        if teach == 1 {
@@ -169,14 +159,14 @@ log.Printf("toSend: {\n")
 log.Printf("   \"name\": \"" + toSend.Name + "\",\n")
 log.Printf("   \"type\": \"" + toSend.Type + "\",\n")
 log.Printf("   \"msg\": \"" + toSend.Message + "\"\n")
-log.Printf("}\n");
+log.Printf("}\n")
 	   } else {
 log.Printf("Invalid login detected\n")
 	      toSend.Type = "INVALID"
 	   }
-	   results[id]<- toSend
+           writeMessage(toSend, id)
        } else {
-	   results[id]<- msg
+	   writeMessage(msg, id)
        }
     }
 }

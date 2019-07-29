@@ -13,7 +13,6 @@ function updateStudent(msg)
 function updateLog(msg)
 {
    let data = JSON.parse(msg.data);
-alert(data.type);
    if(data.type == "TEACHER")
    {
      log = false;
@@ -26,11 +25,9 @@ alert(data.type);
      student = true;
      showStudent();
    }
-  else 
+   else if (data.type == "INVALID") 
    {
-     log = false;
-     teach = true;
-     showStudent();
+     // show login error on login div
    }
 }
 
@@ -38,13 +35,11 @@ alert(data.type);
 function updateTeacher(msg) {
     var sp = "&nbsp&nbsp&nbsp&nbsp";
     let data = JSON.parse(msg.data);
-    id("chat").insertAdjacentHTML("afterbegin", data.msg);
+alert("Got \"" + data.msg + "\"");
+
+    $('#todo').append("<li>" + data.name + sp + data.msg + sp + data.type + "<a href='#' id='close'>delete</a></li>");
 
     $(document).ready(function () {
-        $('button').click(function () {
-     	   $('#todo').append("<li>" + data.name + sp + data.msg + sp + data.type + "<a href='#' id='close'>delete</a></li>");
-        });
-
         $("body").on('click', 'li', function () {
             $(this).closest("li").remove();
    	});
