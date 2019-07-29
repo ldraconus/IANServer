@@ -8,9 +8,15 @@ var message = { name: "", type: "TEACHER", msg: "" };
 var log = true;
 var stud = false;
 var teach = false;
+var stylesheetLog = null;
 
 function login()
 {
+  //Disable Collins CSS, its messing up my radio buttons
+  stylesheetLog = document.styleSheets[1];
+  console.log(stylesheetLog);
+  stylesheetLog.disabled = true;
+	
   //Establish the WebSocket connection and set up event handlers
   ws = new WebSocket('ws://' + window.location.host + '/ws');
   ws.onmessage = msg => updateChat(msg);
