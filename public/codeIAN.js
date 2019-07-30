@@ -4,11 +4,8 @@ var message = { name: "", type: "LOGIN", msg: "" };
 var log = true;
 var stud = false;
 var teach = false;
+var stylesheetLog = null;
 
-function updateStudent(msg)
-{
-  //to add later if we want sending msg
-}
 
 function updateLog(msg)
 {
@@ -31,19 +28,26 @@ function updateLog(msg)
    }
 }
 
+function updateStudent(msg)
+{
+  //to add later if we want sending msg
+}
+
 // Update chat-panel and list of connected users
 function updateTeacher(msg) {
     var sp = "&nbsp&nbsp&nbsp&nbsp";
     let data = JSON.parse(msg.data);
-alert("Got \"" + data.msg + "\"");
-
-    $('#todo').append("<li>" + data.name + sp + data.msg + sp + data.type + "<a href='#' id='close'>delete</a></li>");
-
+    alert("Got \"" + data.msg + "\"");
     $(document).ready(function () {
-        $("body").on('click', 'li', function () {
-            $(this).closest("li").remove();
-   	});
-    });
+   	 $('button').click(function () {
+     	   $('#todo').append("<li>" + data.name + sp + data.msg + sp + data.type + "<a href='#' id='close'>delete</a></li>");
+   	  });
+
+  	  $("body").on('click', 'li', function () {
+      	  $(this).closest("li").remove();
+   	  });
+     });
+
 }
 
 function updateChat(msg) {
@@ -100,6 +104,7 @@ function getInfo()
             message.type = radioValue + "";
             var json = JSON.stringify(message);
             ws.send(json);
+            document.getElementById("message").value = "";
        });
    });
 
