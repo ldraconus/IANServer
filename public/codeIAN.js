@@ -38,15 +38,7 @@ function updateTeacher(msg) {
     var sp = "&nbsp&nbsp&nbsp&nbsp";
     let data = JSON.parse(msg.data);
     alert("Got \"" + data.msg + "\"");
-    $(document).ready(function () {
-   	 $('button').click(function () {
-     	   $('#todo').append("<li>" + data.name + sp + data.msg + sp + data.type + "<a href='#' id='close'>delete</a></li>");
-   	  });
-
-  	  $("body").on('click', 'li', function () {
-      	  $(this).closest("li").remove();
-   	  });
-     });
+   $('#todo').append("<li>" + data.name + sp + data.msg + sp + data.type + "<a href='#' id='close'>delete</a></li>");
 
 }
 
@@ -133,4 +125,9 @@ function showTeacher()
   document.getElementById("login").style.display = "none";
   document.getElementById("student").style.display = "none";
   document.getElementById("teacher").style.display = "block";
+    $(document).ready(function () {
+  	  $("body").on('click', 'li', function () {
+      	  $(this).closest("li").remove();
+   	  });
+     });
 }
