@@ -81,14 +81,13 @@ function login()
 //Creates JSON Object after submit on Student side
 function getInfo()
 {
-  var name = document.getElementById("name").value;
-  var msg = document.getElementById("message").value;
   var radioValue = 0;
 
   $(document).ready(function(){
        $("input[type='button']").click(function(){
+            var name = document.getElementById("secret").value;
+            var msg = document.getElementById("message").value;
             radioValue = $("input[name='rate1']:checked").val();
-            //alert(name + " " + msg + " " + radioValue);
             //Here are the 3 values, they just need to be
             //added to the JSON object
             message.name = name;
