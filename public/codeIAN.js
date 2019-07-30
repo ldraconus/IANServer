@@ -68,6 +68,11 @@ ws.onclose = () => alert("WebSocket connection closed");
 
 function login()
 {
+  //Disable Collins CSS, its messing up my radio buttons
+  stylesheetLog = document.styleSheets[1];
+  console.log(stylesheetLog);
+  stylesheetLog.disabled = true;
+  
   var name = document.getElementById("name").value;
   var pass = document.getElementById("password").value;
   message.name = name;
