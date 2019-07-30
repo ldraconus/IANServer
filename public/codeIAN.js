@@ -37,8 +37,7 @@ function updateStudent(msg)
 function updateTeacher(msg) {
     var sp = "&nbsp&nbsp&nbsp&nbsp";
     let data = JSON.parse(msg.data);
-    alert("Got \"" + data.msg + "\"");
-   $('#todo').append("<li>" + data.name + sp + data.msg + sp + data.type + "<a href='#' id='close'>delete</a></li>");
+    $('#todo').append("<li>" + data.name + sp + data.msg + sp + data.type + "<a href='#' id='close'>delete</a></li>");
 
 }
 
@@ -83,21 +82,6 @@ function getInfo()
 {
   var radioValue = 0;
 
-  $(document).ready(function(){
-       $("input[type='button']").click(function(){
-            var name = document.getElementById("secret").value;
-            var msg = document.getElementById("message").value;
-            radioValue = $("input[name='rate1']:checked").val();
-            //Here are the 3 values, they just need to be
-            //added to the JSON object
-            message.name = name;
-            message.msg = msg;
-            message.type = radioValue + "";
-            var json = JSON.stringify(message);
-            ws.send(json);
-            document.getElementById("message").value = "";
-       });
-   });
 
 }
 
@@ -117,6 +101,19 @@ function showStudent()
   document.getElementById("login").style.display = "none";
   document.getElementById("student").style.display = "block";
   document.getElementById("teacher").style.display = "none";
+       $("input[type='button']").click(function(){
+            var name = document.getElementById("secret").value;
+            var msg = document.getElementById("message").value;
+            radioValue = $("input[name='rate1']:checked").val();
+            //Here are the 3 values, they just need to be
+            //added to the JSON object
+            message.name = name;
+            message.msg = msg;
+            message.type = radioValue + "";
+            var json = JSON.stringify(message);
+            ws.send(json);
+            document.getElementById("message").value = "";
+       });
 }
 
 function showTeacher()
